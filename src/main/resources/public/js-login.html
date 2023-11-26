@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<div id="g_id_onload"
+     data-client_id="97133589647-rdt7v2rcpujtsk4ldbcanlb85vb1dffg.apps.googleusercontent.com"
+     data-context="signin"
+     data-ux_mode="popup"
+     data-callback="callback"
+     data-auto_select="true"
+     data-itp_support="true">
+</div>
+
+<div class="g_id_signin"
+     data-type="standard"
+     data-shape="rectangular"
+     data-theme="outline"
+     data-text="signin_with"
+     data-size="large"
+     data-logo_alignment="left">
+</div>
+
+<div id="userInformation" style="margin: 20px; max-width: 500px;">
+
+</div>
+
+<script>
+        function callback(response) {
+            var credential = response.credential;
+            verifyTokenOnBackend(credential);
+        }
+
+        function verifyTokenOnBackend(idToken) {
+            // Make a POST request to your server with the ID token in the request body
+            fetch('/js/js-callback', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ credential: idToken }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle the response from the server
+                console.log('Server verification response:', data);
+
+                // Display the user information in the UI
+                displayUserInformation(data);
+            })
+            .catch(error => {
+                console.error('Error verifying token on the server:', error);
+            });
+        }
+
+        function displayUserInformation(userInfo) {
+            var userInformationDiv = document.getElementById('userInformation');
+
+            // Create a table to display user information
+            var table = document.createElement('table');
+            table.style.borderCollapse = 'collapse';
+            table.style.width = '100%';
+
+            // Create table rows and cells for each property in the user information
+            for (var key in userInfo) {
+                if (userInfo.hasOwnProperty(key)) {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+
+                    cell1.innerHTML = '<strong style="margin-right: 10px;">' + key + '</strong>';
+                    cell2.innerHTML = key === 'pictureUrl' ? '<img src="' + userInfo[key] + '" alt="Profile Picture" style="max-width: 100px; max-height: 100px;">' : userInfo[key];
+                }
+            }
+
+            // Append the table to the userInformationDiv
+            userInformationDiv.appendChild(table);
+        }
+    </script>
+</body>
+</html>
